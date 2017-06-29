@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Udacity - Map</title>
+    <link rel="stylesheet" type="text/css" href="../css/normalize.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/styles.css">
+</head>
+<body>
+<div class="columns">
+    <div class="column is-one-quarter">
+        <div class="field is-grouped">
+            <p class="control is-expanded">
+                <input class="input" type="text" placeholder="Find a place" data-bind="value: place">
+            </p>
+            <p class="control">
+                <a class="button is-info" data-bind="click: search">
+                    Search
+                </a>
+            </p>
+        </div>
+    </div>
+    <div id="map" class="column full-height">
+    </div>
+</div>
+<script src="bundle.js"></script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHaXPqqRPF7tljkosYIZM4II5MH66__qI&v=3&callback=initMap"></script>
+</body>
+</html>

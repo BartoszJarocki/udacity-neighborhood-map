@@ -1,0 +1,16 @@
+{
+  "name": "udacity-map",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "knockout": "^3.4.2",
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "webpack": "^3.0.0"
+  }
+}
