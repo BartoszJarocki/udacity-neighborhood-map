@@ -6,7 +6,47 @@ body {
     padding: 0;
 }
 
+#map {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: lightgray;
+    margin: 0;
+}
+
 .columns {
     margin: 0;
     height: 100%;
+}
+
+/* Spinner related CSS */
+#spinner {
+    width: 40px;
+    height: 40px;
+    margin: 100px auto;
+    background-color: #ffffff;
+
+    border-radius: 100%;
+    -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+    animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-scaleout {
+    0% { -webkit-transform: scale(0) }
+    100% {
+        -webkit-transform: scale(1.0);
+        opacity: 0;
+    }
+}
+
+@keyframes sk-scaleout {
+    0% {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    } 100% {
+          -webkit-transform: scale(1.0);
+          transform: scale(1.0);
+          opacity: 0;
+      }
 }

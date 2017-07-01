@@ -12,16 +12,21 @@
     <div class="column is-one-quarter">
         <div class="field is-grouped">
             <p class="control is-expanded">
-                <input class="input" type="text" placeholder="Find a place" data-bind="value: place">
+                <input class="input" type="text" placeholder="Filter restaurants" data-bind="value: filterQuery">
             </p>
             <p class="control">
-                <a class="button is-info" data-bind="click: search">
-                    Search
-                </a>
+                <a class="button is-primary" data-bind="click: filterRestaurants">Filter</a>
             </p>
         </div>
+        <ul id="restaurant-list" class="menu-list" data-bind="foreach: restaurants">
+            <li><a data-bind="text: name, click: $parent.restaurantClicked, css: { 'is-active': $parent.selectedRestaurant().id == id }"></a></li>
+        </ul>
+        <button data-bind="visible: filterMode, click: resetFilter" class="button is-primary is-outlined is-fullwidth">
+            Reset filter
+        </button>
     </div>
-    <div id="map" class="column full-height">
+    <div id="map" class="column">
+        <div id="spinner"></div>
     </div>
 </div>
 <script src="bundle.js"></script>
