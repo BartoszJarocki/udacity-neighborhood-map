@@ -134,7 +134,7 @@ function getLocation() {
  */
 function onMapError() {
   $('#spinner').addClass('is-hidden');
-  $('#error').removeClass('is-hidden');
+  $('#map-error').removeClass('is-hidden');
 }
 
 function searchRestaurantsByLocation(location) {
