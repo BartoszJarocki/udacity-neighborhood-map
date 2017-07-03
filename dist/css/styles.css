@@ -6,13 +6,30 @@ body {
     padding: 0;
 }
 
+.margin-top {
+    margin-top: 30px;
+}
+
+#details-container {
+    position: relative;
+    padding: 0;
+}
+
 #map {
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     background-color: lightgray;
     margin: 0;
+    padding: 0;
+    z-index: 0;
+}
+
+#restaurant-details-overlay {
+    width: 400px;
+    position: absolute;
+    z-index: 1;
+    right: 0;
+    margin: 20px;
+    overflow: scroll;
 }
 
 .columns {
@@ -24,8 +41,30 @@ body {
 #spinner {
     width: 40px;
     height: 40px;
-    margin: 100px auto;
     background-color: #ffffff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 2;
+
+    border-radius: 100%;
+    -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+    animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
+/* Spinner related CSS */
+#spinner-details {
+    width: 40px;
+    height: 40px;
+    background-color: #333333;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    z-index: 2;
 
     border-radius: 100%;
     -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
@@ -33,7 +72,9 @@ body {
 }
 
 @-webkit-keyframes sk-scaleout {
-    0% { -webkit-transform: scale(0) }
+    0% {
+        -webkit-transform: scale(0)
+    }
     100% {
         -webkit-transform: scale(1.0);
         opacity: 0;
@@ -44,9 +85,10 @@ body {
     0% {
         -webkit-transform: scale(0);
         transform: scale(0);
-    } 100% {
-          -webkit-transform: scale(1.0);
-          transform: scale(1.0);
-          opacity: 0;
-      }
+    }
+    100% {
+        -webkit-transform: scale(1.0);
+        transform: scale(1.0);
+        opacity: 0;
+    }
 }

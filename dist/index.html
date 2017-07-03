@@ -19,14 +19,31 @@
             </p>
         </div>
         <ul id="restaurant-list" class="menu-list" data-bind="foreach: restaurants">
-            <li><a data-bind="text: name, click: $parent.restaurantClicked, css: { 'is-active': $parent.selectedRestaurant().id == id }"></a></li>
+            <li>
+                <a data-bind="text: name, click: $parent.restaurantClicked, css: { 'is-active': $parent.selectedRestaurant().id == id }"></a>
+            </li>
         </ul>
         <button data-bind="visible: filterMode, click: resetFilter" class="button is-primary is-outlined is-fullwidth">
             Reset filter
         </button>
     </div>
-    <div id="map" class="column">
-        <div id="spinner"></div>
+    <div class="column" id="details-container">
+        <div id="restaurant-details-overlay" class="box" data-bind="visible: selectedRestaurant().id != -1">
+            <div id="spinner-details" data-bind="visible: showRestaurantDetailsProgress()"></div>
+            <div id="no-details" data-bind="visible: showRestaurantDetailsEmpty() || showRestaurantDetailsError()">
+                No data.
+            </div>
+            <div id="restaurant-details" class="content" data-bind="visible: showRestaurantDetails()">
+                <h2><span data-bind="text: restaurantDetails().name"></span></h2>
+                <img data-bind="attr:{src: restaurantDetails().photo}"/>
+                <div>Checkin count: <span data-bind="text: restaurantDetails().checkinCount"></span></div>
+                <div>Tip count: <span data-bind="text: restaurantDetails().tipCount"></span></div>
+                <div>Users count: <span data-bind="text: restaurantDetails().usersCount"></span></div>
+                <h6 class="margin-top">Data from Google Places and Foursquare API</h6>
+            </div>
+        </div>
+        <div id="spinner" data-bind="visible: restaurants().length == 0"></div>
+        <div id="map"></div>
     </div>
 </div>
 <script src="bundle.js"></script>
