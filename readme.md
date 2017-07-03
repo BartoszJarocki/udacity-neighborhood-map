@@ -14,10 +14,10 @@ Theres also ability to filter the list.
 Application also uses webpack and babel.
 
 ## Running the application
-1. run ```yarn install``` from the root of the project
-2. run ```yarn build``` to generate bundle.js
-2. run ```yarn start``` which will start the webpack development server
-3. open ```http://localhost:9000/```
+1. Install [Yarn](https://yarnpkg.com/lang/en/)
+2. run ```yarn install``` from the root of the project
+3. run ```yarn start``` which will start the webpack development server
+4. open ```http://localhost:9000/```
 
 ## APIs usage
 1. Google Maps 
