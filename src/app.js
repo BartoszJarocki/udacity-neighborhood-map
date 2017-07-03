@@ -11,27 +11,34 @@ const FOURSQUARE_DATE_VERSION = '20170701';
 let restaurants = [];
 let markers = [];
 
-let RestaurantInfo = function (data) {
-  let self = this;
+class Restaurant {
+  constructor(data) {
+    this.id = data.place_id;
+    this.name = data.name;
+    this.address = data.vicinity;
+    this.location = {lat: data.geometry.location.lat(), lng: data.geometry.location.lng()};
+    this.photos = data.photos;
+  }
+}
 
-  self.id = data.place_id;
-  self.name = data.name;
-  self.address = data.vicinity;
-  self.location = {lat: data.geometry.location.lat(), lng: data.geometry.location.lng()};
-  self.photos = data.photos;
-};
-
+/**
+ * Knockout JS ViewModel responsible for updating DOM
+ */
 function RestaurantsViewModel() {
   let self = this;
 
+  // Current list of restaurants fetched from Google Places API
   self.restaurants = ko.observableArray(
     _.chain(restaurants)
-      .map(restaurant => new RestaurantInfo(restaurant))
+      .map(restaurant => new Restaurant(restaurant))
       .value()
   );
 
+  // Currently selected restaurant
   self.selectedRestaurant = ko.observable(NO_SELECTION);
 
+  // Triggered when restaurant is selected from the sidebar
+  // Triggers marker click and fetching the restaurant details
   self.restaurantClicked = function (restaurant) {
     console.log(restaurant);
 
@@ -40,8 +47,11 @@ function RestaurantsViewModel() {
     fetchDetails(restaurant);
   };
 
+  // Keeps the filter input
   self.filterQuery = ko.observable('');
 
+  // Filters the restaurant list with entered by user filterQuery.
+  // Triggered by clicking Filter button
   self.filterRestaurants = function () {
     self.selectedRestaurant(NO_SELECTION);
 
@@ -61,16 +71,21 @@ function RestaurantsViewModel() {
     centerMap();
   };
 
+  // Responsible for showing/hiding reset filter button
   self.filterMode = ko.computed(function () {
     return !_.isEmpty(self.filterQuery());
   });
 
+  // Run when reset filter button is clicked
+  // Clears the filterQuery
   self.resetFilter = function () {
     self.filterQuery('');
     self.filterRestaurants()
   };
 
+  // Restaurant details object fetched from Google Places and Foursquare API
   self.restaurantDetails = ko.observable({});
+  // Error string displayed when Foursquare API fails
   self.restaurantDetailsError = ko.observable('');
   self.showRestaurantDetailsProgress = ko.observable(false);
   self.showRestaurantDetailsError = ko.observable(false);
@@ -89,13 +104,17 @@ ko.applyBindings(viewModel);
 /**
  * Maps related functions
  */
-
 window.getLocation = getLocation;
 
 let map;
 let infoWindow;
 let placesService;
 
+const RADIUS = 5000;
+
+/**
+ * Run when map is loaded.
+ */
 function getLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showMapForPosition);
@@ -109,21 +128,36 @@ function getLocation() {
 }
 
 function searchRestaurantsByLocation(location) {
-  placesService.nearbySearch({
+  let request = {
     location: new google.maps.LatLng(location.lat, location.lng),
-    radius: 5000,
+    radius: RADIUS,
     type: ['restaurant']
-  }, onSearchResults);
+  };
+  searchRestaurants(request);
 }
 
 function searchRestaurantsByBounds() {
-  placesService.nearbySearch({
+  let request = {
     bounds: map.getBounds(),
-    radius: 5000,
+    radius: RADIUS,
     type: ['restaurant']
-  }, onSearchResults);
+  };
+  searchRestaurants(request);
 }
 
+/**
+ * Searches restaurants using Google Places API
+ * @param request
+ */
+function searchRestaurants(request) {
+  placesService.nearbySearch(request, onSearchResults);
+}
+
+/**
+ * Called with Google Places API call results
+ * @param results
+ * @param status
+ */
 function onSearchResults(results, status) {
   viewModel.selectedRestaurant(NO_SELECTION);
 
@@ -132,7 +166,7 @@ function onSearchResults(results, status) {
     restaurants = [];
 
     for (var i = 0; i < results.length; i++) {
-      restaurants.push(new RestaurantInfo(results[i]));
+      restaurants.push(new Restaurant(results[i]));
       markers.push(createMarker(results[i]));
     }
   }
@@ -140,6 +174,10 @@ function onSearchResults(results, status) {
   viewModel.restaurants(restaurants);
 }
 
+/**
+ * Creates map object centered in given position and triggers initial restaurant search.
+ * @param position
+ */
 function showMapForPosition(position) {
   let userLocation = {lat: position.coords.latitude, lng: position.coords.longitude};
 
@@ -158,6 +196,9 @@ function showMapForPosition(position) {
   searchRestaurantsByLocation(userLocation);
 }
 
+/**
+ * Centers the map to show all available markers.
+ */
 function centerMap() {
   const visibleMarkers = _.filter(markers, (marker) => marker.visible);
   let bounds = new google.maps.LatLngBounds();
@@ -170,6 +211,11 @@ function centerMap() {
   map.fitBounds(bounds);
 }
 
+/**
+ * Creates Google Maps marker for given place and configures it to display restaurant details when clicked.
+ * @param place
+ * @returns {google.maps.Marker}
+ */
 function createMarker(place) {
   let marker = new google.maps.Marker({
     id: place.place_id,
@@ -203,6 +249,10 @@ function createMarker(place) {
   return marker;
 }
 
+/**
+ * Triggers marker click programatically.
+ * @param id
+ */
 function selectMarker(id) {
   _.chain(markers)
     .filter((marker) => marker.id === id)
@@ -226,6 +276,9 @@ function clearMarkers() {
   markers = [];
 }
 
+/**
+ * Filters all available markers to display only markers for currently filtered restaurants.
+ */
 function filterMarkers() {
   _.chain(markers)
     .each(marker => marker.setVisible(false))
@@ -238,6 +291,10 @@ function filterMarkers() {
   }
 }
 
+/**
+ * Fetches the restaurant details using Foursquare API
+ * @param restaurant
+ */
 function fetchDetails(restaurant) {
   viewModel.restaurantDetails({});
   viewModel.showRestaurantDetailsProgress(true);
