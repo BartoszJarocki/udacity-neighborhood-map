@@ -1,4 +1,4 @@
-#Udacity - Neighborhood map
+Udacity - Neighborhood map
 ============
 
 Web application which shows a list of restaurant in user location on Google Map.
