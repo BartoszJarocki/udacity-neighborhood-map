@@ -22,6 +22,10 @@ body {
     align-items: center;
 }
 
+#map-error {
+    margin: auto;
+}
+
 .margin-top {
     margin-top: 15px;
 }

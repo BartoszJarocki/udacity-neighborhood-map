@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import ko from 'knockout';
 import axios from 'axios';
+import $ from 'jquery';
 
 const NO_SELECTION = {id: -1};
 
@@ -54,9 +55,9 @@ function RestaurantsViewModel() {
   // Triggered by clicking Filter button
   self.filterRestaurants = function () {
     self.selectedRestaurant(NO_SELECTION);
+    self.restaurants(restaurants);
 
     if (_.isEmpty(self.filterQuery())) {
-      self.restaurants(restaurants);
       filterMarkers();
       centerMap();
       return;
@@ -105,6 +106,7 @@ ko.applyBindings(viewModel);
  * Maps related functions
  */
 window.getLocation = getLocation;
+window.onMapError = onMapError;
 
 let map;
 let infoWindow;
@@ -125,6 +127,14 @@ function getLocation() {
       zoom: 13
     });
   }
+}
+
+/**
+ * Hides the map loading spinner and shows the error notification.
+ */
+function onMapError() {
+  $('#spinner').addClass('is-hidden');
+  $('#error').removeClass('is-hidden');
 }
 
 function searchRestaurantsByLocation(location) {

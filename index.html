@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Udacity - Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/normalize.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.css"/>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
@@ -47,10 +48,14 @@
     </div>
     <div class="column map-container" id="map">
         <div id="spinner" data-bind="visible: restaurants().length == 0"></div>
+        <div id="map-error" class="notification is-danger is-hidden">
+            Error loading map.
+        </div>
     </div>
 </div>
 <script src="dist/bundle.js"></script>
 <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHaXPqqRPF7tljkosYIZM4II5MH66__qI&v=3&libraries=places&callback=getLocation"></script>
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHaXPqqRPF7tljkosYIZM4II5MH66__qI&v=3&libraries=places&callback=getLocation" onerror="onMapError()">
+</script>
 </body>
 </html>

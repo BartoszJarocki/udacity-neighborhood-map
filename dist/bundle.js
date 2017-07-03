@@ -1007,9 +1007,11 @@ function RestaurantsViewModel() {
   // Triggered by clicking Filter button
   self.filterRestaurants = function () {
     self.selectedRestaurant(NO_SELECTION);
+    self.restaurants(restaurants);
+
+    console.log("ASD");
 
     if (_lodash2.default.isEmpty(self.filterQuery())) {
-      self.restaurants(restaurants);
       filterMarkers();
       centerMap();
       return;
