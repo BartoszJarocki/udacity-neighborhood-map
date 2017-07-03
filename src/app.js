@@ -80,7 +80,7 @@ function RestaurantsViewModel() {
   // Clears the filterQuery
   self.resetFilter = function () {
     self.filterQuery('');
-    self.filterRestaurants()
+    self.filterRestaurants();
   };
 
   // Restaurant details object fetched from Google Places and Foursquare API
@@ -205,7 +205,7 @@ function centerMap() {
   _.each(visibleMarkers, marker => {
     if (marker.visible) {
       marker.setMap(map);
-      bounds.extend(marker.position)
+      bounds.extend(marker.position);
     }
   });
   map.fitBounds(bounds);
