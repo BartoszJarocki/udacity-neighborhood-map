@@ -1,4 +1,5 @@
-Udacity - Neighborhood map
+#Udacity - Neighborhood map
+============
 
 Web application which shows a list of restaurant in user location on Google Map.
 When restaurant marker is clicked application fetches some additional data about it from Foursquare API and displays it.
