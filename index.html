@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>Udacity - Map</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.css"/>
-    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <div class="columns">
@@ -21,11 +21,13 @@
                     <a class="button is-primary" data-bind="click: filterRestaurants">Filter</a>
                 </p>
             </div>
+
             <ul id="restaurant-list" class="menu-list" data-bind="foreach: restaurants">
                 <li>
                     <a data-bind="text: name, click: $parent.restaurantClicked, css: { 'is-active': $parent.selectedRestaurant().id == id }"></a>
                 </li>
             </ul>
+
             <button data-bind="visible: filterMode, click: resetFilter"
                     class="button is-primary is-outlined is-fullwidth">
                 Reset filter
@@ -33,9 +35,11 @@
         </div>
         <div id="details-container" class="box" data-bind="visible: selectedRestaurant().id != -1">
             <div id="spinner-details" data-bind="visible: showRestaurantDetailsProgress()"></div>
+
             <div id="no-details" data-bind="visible: showRestaurantDetailsEmpty() || showRestaurantDetailsError()">
                 No data.
             </div>
+
             <div id="restaurant-details" class="content" data-bind="visible: showRestaurantDetails()">
                 <h2><span data-bind="text: restaurantDetails().name"></span></h2>
                 <img data-bind="attr:{src: restaurantDetails().photo}"/>
@@ -48,6 +52,7 @@
     </div>
     <div class="column map-container" id="map">
         <div id="spinner" data-bind="visible: restaurants().length == 0"></div>
+
         <div id="map-error" class="notification is-danger is-hidden">
             Error loading map.
         </div>
