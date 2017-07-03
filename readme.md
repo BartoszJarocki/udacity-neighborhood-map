@@ -16,6 +16,7 @@ Application also uses webpack and babel.
 ## Running the application
 1. Install [Yarn](https://yarnpkg.com/lang/en/)
 2. run ```yarn install``` from the root of the project
+3. run ```yarn build``` to create bundle.js
 3. run ```yarn start``` which will start the webpack development server
 4. open ```http://localhost:9000/```
 

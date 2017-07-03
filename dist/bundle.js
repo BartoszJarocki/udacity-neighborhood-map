@@ -934,104 +934,366 @@ module.exports = Cancel;
 
 /***/ }),
 /* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_lodash__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_knockout__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_knockout___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_knockout__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_axios__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_axios__);
 
 
+var _lodash = __webpack_require__(9);
 
+var _lodash2 = _interopRequireDefault(_lodash);
 
+var _knockout = __webpack_require__(12);
 
-var RestaurantInfoViewModel = function (data) {
-  var self = this;
+var _knockout2 = _interopRequireDefault(_knockout);
 
-  self.id = data.id;
-  self.name = data.name;
-  self.address = data.address;
-  self.toggled = __WEBPACK_IMPORTED_MODULE_1_knockout___default.a.observable(data.toggled);
-  self.showing = __WEBPACK_IMPORTED_MODULE_1_knockout___default.a.observable(data.showing);
-  self.location = data.location;
+var _axios = __webpack_require__(13);
+
+var _axios2 = _interopRequireDefault(_axios);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var NO_SELECTION = { id: -1 };
+
+var FOURSQUARE_CLIENT_ID = '1LYQZGNJY5LEMM43JY3U11X12JQSBNLTFAIHFLJYECGP2EMX';
+var FOURSQUARE_CLIENT_SECRET = '31SPAFT0LCOGKLSQUNJU1H3BZVP4PW0DGDCKN41ELLENWK1W';
+var FOURSQUARE_DATE_VERSION = '20170701';
+
+var restaurants = [];
+var markers = [];
+
+var Restaurant = function Restaurant(data) {
+  _classCallCheck(this, Restaurant);
+
+  this.id = data.place_id;
+  this.name = data.name;
+  this.address = data.vicinity;
+  this.location = { lat: data.geometry.location.lat(), lng: data.geometry.location.lng() };
+  this.photos = data.photos;
 };
 
-function AppViewModel() {
-  let self = this;
+/**
+ * Knockout JS ViewModel responsible for updating DOM
+ */
 
-  this.place = __WEBPACK_IMPORTED_MODULE_1_knockout___default.a.observable('');
 
-  this.search = function () {
-    console.log("test");
-    console.log(self.place());
-  }
+function RestaurantsViewModel() {
+  var self = this;
+
+  // Current list of restaurants fetched from Google Places API
+  self.restaurants = _knockout2.default.observableArray(_lodash2.default.chain(restaurants).map(function (restaurant) {
+    return new Restaurant(restaurant);
+  }).value());
+
+  // Currently selected restaurant
+  self.selectedRestaurant = _knockout2.default.observable(NO_SELECTION);
+
+  // Triggered when restaurant is selected from the sidebar
+  // Triggers marker click and fetching the restaurant details
+  self.restaurantClicked = function (restaurant) {
+    console.log(restaurant);
+
+    self.selectedRestaurant(restaurant);
+    selectMarker(restaurant.id);
+    fetchDetails(restaurant);
+  };
+
+  // Keeps the filter input
+  self.filterQuery = _knockout2.default.observable('');
+
+  // Filters the restaurant list with entered by user filterQuery.
+  // Triggered by clicking Filter button
+  self.filterRestaurants = function () {
+    self.selectedRestaurant(NO_SELECTION);
+
+    if (_lodash2.default.isEmpty(self.filterQuery())) {
+      self.restaurants(restaurants);
+      filterMarkers();
+      centerMap();
+      return;
+    }
+
+    self.restaurants(_lodash2.default.chain(self.restaurants()).filter(function (restaurant) {
+      return restaurant.name.toLowerCase().indexOf(self.filterQuery().toLowerCase()) > -1;
+    }).value());
+    filterMarkers();
+    centerMap();
+  };
+
+  // Responsible for showing/hiding reset filter button
+  self.filterMode = _knockout2.default.computed(function () {
+    return !_lodash2.default.isEmpty(self.filterQuery());
+  });
+
+  // Run when reset filter button is clicked
+  // Clears the filterQuery
+  self.resetFilter = function () {
+    self.filterQuery('');
+    self.filterRestaurants();
+  };
+
+  // Restaurant details object fetched from Google Places and Foursquare API
+  self.restaurantDetails = _knockout2.default.observable({});
+  // Error string displayed when Foursquare API fails
+  self.restaurantDetailsError = _knockout2.default.observable('');
+  self.showRestaurantDetailsProgress = _knockout2.default.observable(false);
+  self.showRestaurantDetailsError = _knockout2.default.observable(false);
+  self.showRestaurantDetailsEmpty = _knockout2.default.observable(false);
+  self.showRestaurantDetails = _knockout2.default.computed(function () {
+    return !self.showRestaurantDetailsProgress() && !self.showRestaurantDetailsError() && !self.showRestaurantDetailsEmpty();
+  }, this);
 }
+
+/**
+ * Apply knockout bindings
+ */
+var viewModel = new RestaurantsViewModel();
+_knockout2.default.applyBindings(viewModel);
 
 /**
  * Maps related functions
  */
-
 window.getLocation = getLocation;
 
-var map;
-var infowindow;
+var map = void 0;
+var infoWindow = void 0;
+var placesService = void 0;
 
+var RADIUS = 5000;
+
+/**
+ * Run when map is loaded.
+ */
 function getLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showMapForPosition);
   } else {
-    // Constructor creates a new map - only center and zoom are required.
+    // use some default place
     map = new google.maps.Map(document.getElementById('map'), {
-      center: {lat: 40.7413549, lng: -73.9980244},
+      center: { lat: 40.7413549, lng: -73.9980244 },
       zoom: 13
     });
   }
 }
 
+function searchRestaurantsByLocation(location) {
+  var request = {
+    location: new google.maps.LatLng(location.lat, location.lng),
+    radius: RADIUS,
+    type: ['restaurant']
+  };
+  searchRestaurants(request);
+}
+
+function searchRestaurantsByBounds() {
+  var request = {
+    bounds: map.getBounds(),
+    radius: RADIUS,
+    type: ['restaurant']
+  };
+  searchRestaurants(request);
+}
+
+/**
+ * Searches restaurants using Google Places API
+ * @param request
+ */
+function searchRestaurants(request) {
+  placesService.nearbySearch(request, onSearchResults);
+}
+
+/**
+ * Called with Google Places API call results
+ * @param results
+ * @param status
+ */
+function onSearchResults(results, status) {
+  viewModel.selectedRestaurant(NO_SELECTION);
+
+  if (status === google.maps.places.PlacesServiceStatus.OK) {
+    clearMarkers();
+    restaurants = [];
+
+    for (var i = 0; i < results.length; i++) {
+      restaurants.push(new Restaurant(results[i]));
+      markers.push(createMarker(results[i]));
+    }
+  }
+
+  viewModel.restaurants(restaurants);
+}
+
+/**
+ * Creates map object centered in given position and triggers initial restaurant search.
+ * @param position
+ */
 function showMapForPosition(position) {
-  var userLocation = {lat: position.coords.latitude, lng: position.coords.longitude};
+  var userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
 
   map = new google.maps.Map(document.getElementById('map'), {
     center: userLocation,
-    zoom: 15
+    zoom: 13,
+    gestureHandling: 'cooperative'
+  });
+  map.addListener('dragend', function () {
+    if (!viewModel.filterMode()) {
+      searchRestaurantsByBounds();
+    }
   });
 
-  var service = new google.maps.places.PlacesService(map);
-  service.nearbySearch({
-    location: userLocation,
-    radius: 2000,
-    type: ['restaurant']
-  }, callback);
+  placesService = new google.maps.places.PlacesService(map);
+  searchRestaurantsByLocation(userLocation);
 }
 
-function callback(results, status) {
-  if (status === google.maps.places.PlacesServiceStatus.OK) {
-    for (var i = 0; i < results.length; i++) {
-      createMarker(results[i]);
+/**
+ * Centers the map to show all available markers.
+ */
+function centerMap() {
+  var visibleMarkers = _lodash2.default.filter(markers, function (marker) {
+    return marker.visible;
+  });
+  var bounds = new google.maps.LatLngBounds();
+  _lodash2.default.each(visibleMarkers, function (marker) {
+    if (marker.visible) {
+      marker.setMap(map);
+      bounds.extend(marker.position);
     }
-  }
+  });
+  map.fitBounds(bounds);
 }
 
+/**
+ * Creates Google Maps marker for given place and configures it to display restaurant details when clicked.
+ * @param place
+ * @returns {google.maps.Marker}
+ */
 function createMarker(place) {
-  var placeLoc = place.geometry.location;
   var marker = new google.maps.Marker({
+    id: place.place_id,
     map: map,
-    position: place.geometry.location
+    position: place.geometry.location,
+    animation: google.maps.Animation.DROP
   });
 
   google.maps.event.addListener(marker, 'click', function () {
-    var infowindow = new google.maps.InfoWindow({
+    map.panTo(marker.getPosition());
+    animateMarker(marker);
+
+    if (infoWindow) {
+      infoWindow.close();
+    }
+
+    var restaurant = _lodash2.default.find(restaurants, { id: marker.id });
+    viewModel.selectedRestaurant(restaurant);
+    fetchDetails(restaurant);
+
+    infoWindow = new google.maps.InfoWindow({
       content: place.name
     });
-    infowindow.open(map, this);
+    infoWindow.open(map, this);
+    infoWindow.addListener('closeclick', function () {
+      viewModel.selectedRestaurant(NO_SELECTION);
+      infoWindow.close();
+    });
   });
+
+  return marker;
 }
 
-__WEBPACK_IMPORTED_MODULE_1_knockout___default.a.applyBindings(new AppViewModel());
+/**
+ * Triggers marker click programatically.
+ * @param id
+ */
+function selectMarker(id) {
+  _lodash2.default.chain(markers).filter(function (marker) {
+    return marker.id === id;
+  }).each(function (marker) {
+    new google.maps.event.trigger(marker, 'click');
+  }).value();
+}
+
+function animateMarker(marker) {
+  marker.setAnimation(google.maps.Animation.BOUNCE);
+  _lodash2.default.delay(function removeAnimation() {
+    marker.setAnimation(null);
+  }, 700);
+}
+
+function clearMarkers() {
+  _lodash2.default.each(markers, function (marker) {
+    marker.setMap(null);
+  });
+  markers = [];
+}
+
+/**
+ * Filters all available markers to display only markers for currently filtered restaurants.
+ */
+function filterMarkers() {
+  _lodash2.default.chain(markers).each(function (marker) {
+    return marker.setVisible(false);
+  }).filter(function (marker) {
+    return _lodash2.default.includes(_lodash2.default.map(viewModel.restaurants(), function (restaurant) {
+      return restaurant.id;
+    }), marker.id);
+  }).each(function (marker) {
+    return marker.setVisible(true);
+  }).value();
+
+  if (infoWindow) {
+    infoWindow.close();
+  }
+}
+
+/**
+ * Fetches the restaurant details using Foursquare API
+ * @param restaurant
+ */
+function fetchDetails(restaurant) {
+  viewModel.restaurantDetails({});
+  viewModel.showRestaurantDetailsProgress(true);
+  viewModel.showRestaurantDetailsEmpty(false);
+  viewModel.showRestaurantDetailsError(false);
+
+  _axios2.default.get('https://api.foursquare.com/v2/venues/search', {
+    params: {
+      'll': restaurant.location.lat + ',' + restaurant.location.lng,
+      'intent': 'match',
+      'query': restaurant.name,
+      'client_id': FOURSQUARE_CLIENT_ID,
+      'client_secret': FOURSQUARE_CLIENT_SECRET,
+      'v': FOURSQUARE_DATE_VERSION
+    }
+  }).then(function (response) {
+    console.log(response);
+
+    var venue = response.data.response.venues && response.data.response.venues[0];
+    if (venue) {
+      var restaurantDetails = {
+        name: venue.name,
+        checkinCount: venue.stats.checkinsCount,
+        tipCount: venue.stats.tipCount,
+        usersCount: venue.stats.usersCount,
+        site: venue.url,
+        photo: restaurant.photos[0].getUrl({ 'maxWidth': 360, 'maxHeight': 300 })
+      };
+
+      viewModel.restaurantDetails(restaurantDetails);
+    } else {
+      viewModel.showRestaurantDetailsEmpty(true);
+    }
+
+    viewModel.showRestaurantDetailsProgress(false);
+  }).catch(function (error) {
+    console.log(error);
+
+    viewModel.restaurantDetailsError(error);
+    viewModel.showRestaurantDetailsProgress(false);
+    viewModel.showRestaurantDetailsError(true);
+  });
+}
 
 /***/ }),
 /* 9 */
