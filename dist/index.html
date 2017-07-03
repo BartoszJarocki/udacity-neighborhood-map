@@ -10,25 +10,27 @@
 <body>
 <div class="columns">
     <div class="column is-one-quarter">
-        <div class="field is-grouped">
-            <p class="control is-expanded">
-                <input class="input" type="text" placeholder="Filter restaurants" data-bind="value: filterQuery">
-            </p>
-            <p class="control">
-                <a class="button is-primary" data-bind="click: filterRestaurants">Filter</a>
-            </p>
+        <div id="list-container" class="box">
+            <div class="field is-grouped">
+                <p class="control is-expanded">
+                    <input class="input" type="text" placeholder="Filter restaurants"
+                           data-bind="value: filterQuery">
+                </p>
+                <p class="control">
+                    <a class="button is-primary" data-bind="click: filterRestaurants">Filter</a>
+                </p>
+            </div>
+            <ul id="restaurant-list" class="menu-list" data-bind="foreach: restaurants">
+                <li>
+                    <a data-bind="text: name, click: $parent.restaurantClicked, css: { 'is-active': $parent.selectedRestaurant().id == id }"></a>
+                </li>
+            </ul>
+            <button data-bind="visible: filterMode, click: resetFilter"
+                    class="button is-primary is-outlined is-fullwidth">
+                Reset filter
+            </button>
         </div>
-        <ul id="restaurant-list" class="menu-list" data-bind="foreach: restaurants">
-            <li>
-                <a data-bind="text: name, click: $parent.restaurantClicked, css: { 'is-active': $parent.selectedRestaurant().id == id }"></a>
-            </li>
-        </ul>
-        <button data-bind="visible: filterMode, click: resetFilter" class="button is-primary is-outlined is-fullwidth">
-            Reset filter
-        </button>
-    </div>
-    <div class="column" id="details-container">
-        <div id="restaurant-details-overlay" class="box" data-bind="visible: selectedRestaurant().id != -1">
+        <div id="details-container" class="box" data-bind="visible: selectedRestaurant().id != -1">
             <div id="spinner-details" data-bind="visible: showRestaurantDetailsProgress()"></div>
             <div id="no-details" data-bind="visible: showRestaurantDetailsEmpty() || showRestaurantDetailsError()">
                 No data.
@@ -42,8 +44,9 @@
                 <h6 class="margin-top">Data from Google Places and Foursquare API</h6>
             </div>
         </div>
+    </div>
+    <div class="column map-container" id="map">
         <div id="spinner" data-bind="visible: restaurants().length == 0"></div>
-        <div id="map"></div>
     </div>
 </div>
 <script src="bundle.js"></script>

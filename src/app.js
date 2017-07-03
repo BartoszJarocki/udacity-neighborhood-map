@@ -3,7 +3,7 @@ import ko from 'knockout';
 import axios from 'axios';
 
 const NO_SELECTION = {id: -1};
-const EMPTY_RESTAURANT_DETAILS = {id: -1};
+
 const FOURSQUARE_CLIENT_ID = '1LYQZGNJY5LEMM43JY3U11X12JQSBNLTFAIHFLJYECGP2EMX';
 const FOURSQUARE_CLIENT_SECRET = '31SPAFT0LCOGKLSQUNJU1H3BZVP4PW0DGDCKN41ELLENWK1W';
 const FOURSQUARE_DATE_VERSION = '20170701';
@@ -72,10 +72,12 @@ function RestaurantsViewModel() {
 
   self.restaurantDetails = ko.observable({});
   self.restaurantDetailsError = ko.observable('');
-  self.showRestaurantDetails = ko.observable(false);
   self.showRestaurantDetailsProgress = ko.observable(false);
   self.showRestaurantDetailsError = ko.observable(false);
   self.showRestaurantDetailsEmpty = ko.observable(false);
+  self.showRestaurantDetails = ko.computed(function () {
+    return !self.showRestaurantDetailsProgress() && !self.showRestaurantDetailsError() && !self.showRestaurantDetailsEmpty();
+  }, this);
 }
 
 /**
@@ -98,7 +100,7 @@ function getLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(showMapForPosition);
   } else {
-    // Constructor creates a new map - only center and zoom are required.
+    // use some default place
     map = new google.maps.Map(document.getElementById('map'), {
       center: {lat: 40.7413549, lng: -73.9980244},
       zoom: 13
@@ -143,7 +145,8 @@ function showMapForPosition(position) {
 
   map = new google.maps.Map(document.getElementById('map'), {
     center: userLocation,
-    zoom: 13
+    zoom: 13,
+    gestureHandling: 'cooperative'
   });
   map.addListener('dragend', function () {
     if (!viewModel.filterMode()) {
@@ -238,7 +241,6 @@ function filterMarkers() {
 function fetchDetails(restaurant) {
   viewModel.restaurantDetails({});
   viewModel.showRestaurantDetailsProgress(true);
-  viewModel.showRestaurantDetails(false);
   viewModel.showRestaurantDetailsEmpty(false);
   viewModel.showRestaurantDetailsError(false);
 
@@ -266,7 +268,6 @@ function fetchDetails(restaurant) {
       };
 
       viewModel.restaurantDetails(restaurantDetails);
-      viewModel.showRestaurantDetails(true);
     } else {
       viewModel.showRestaurantDetailsEmpty(true);
     }

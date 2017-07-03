@@ -7,17 +7,33 @@ body {
 }
 
 .columns {
-    margin: 0;
+    margin: 0 !important;
     height: 100%;
 }
 
+.column {
+    overflow: scroll;
+}
+
+.map-container {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .margin-top {
-    margin-top: 30px;
+    margin-top: 15px;
+}
+
+#list-container {
+    height: 48%;
+    overflow: scroll;
 }
 
 #details-container {
-    position: relative;
-    padding: 0;
+    height: 48%;
+    overflow: scroll;
 }
 
 #map {
@@ -25,17 +41,6 @@ body {
     background-color: lightgray;
     margin: 0;
     padding: 0;
-    z-index: 0;
-}
-
-#restaurant-details-overlay {
-    height: 500px;
-    width: 400px;
-    position: absolute;
-    z-index: 1;
-    right: 0;
-    margin: 20px;
-    overflow: scroll;
 }
 
 /* Spinner related CSS */
@@ -43,11 +48,7 @@ body {
     width: 40px;
     height: 40px;
     background-color: #ffffff;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
-    z-index: 2;
+    margin: auto;
 
     border-radius: 100%;
     -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
@@ -59,13 +60,7 @@ body {
     width: 40px;
     height: 40px;
     background-color: #333333;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
     margin: auto;
-    z-index: 2;
 
     border-radius: 100%;
     -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
