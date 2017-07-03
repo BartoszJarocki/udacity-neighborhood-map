@@ -6,6 +6,11 @@ body {
     padding: 0;
 }
 
+.columns {
+    margin: 0;
+    height: 100%;
+}
+
 .margin-top {
     margin-top: 30px;
 }
@@ -24,17 +29,13 @@ body {
 }
 
 #restaurant-details-overlay {
+    height: 500px;
     width: 400px;
     position: absolute;
     z-index: 1;
     right: 0;
     margin: 20px;
     overflow: scroll;
-}
-
-.columns {
-    margin: 0;
-    height: 100%;
 }
 
 /* Spinner related CSS */
